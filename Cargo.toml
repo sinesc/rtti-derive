@@ -1,0 +1,12 @@
+[package]
+name = "rtti-derive"
+version = "0.1.0"
+authors = ["Dennis Möhlmann <dmo479@gmail.com>"]
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn = "0.12.13"
+quote = "0.4.2"
+proc-macro2 = "0.2.2"

@@ -5,8 +5,6 @@ extern crate proc_macro2;
 extern crate syn;
 #[macro_use]
 extern crate quote;
-use quote::{Tokens, ToTokens};
-use proc_macro2::{TokenTree};
 use proc_macro::TokenStream;
 
 #[proc_macro_derive(RTTI, attributes(HelloWorldName))]
@@ -16,21 +14,14 @@ pub fn macro_rtti(input: TokenStream) -> TokenStream {
     gen.into()
 }
 
-fn noescape(string: &str) -> TokenTree {
-    use proc_macro2::{TokenNode, TokenTree, Span, Term};
-    TokenTree {
-        span: Span::def_site(),
-        kind: TokenNode::Term(Term::intern(string)),
-    }
-}
-
-fn translate_visibility(vis: &syn::Visibility) -> TokenTree {
+fn translate_visibility(vis: &syn::Visibility) -> syn::Ident {
+    #[allow(unreachable_patterns)]
     match vis {
-        &syn::Visibility::Public(_) => noescape("Visibility::Public"),
-        &syn::Visibility::Crate(_) => noescape("Visibility::Crate"),
-        &syn::Visibility::Restricted(_) => noescape("Visibility::Restricted"),
-        &syn::Visibility::Inherited => noescape("Visibility::Inherited"),
-        _ => noescape("Visibility::Unknown"),
+        &syn::Visibility::Public(_) => syn::Ident::from("Public"),
+        &syn::Visibility::Crate(_) => syn::Ident::from("Crate"),
+        &syn::Visibility::Restricted(_) => syn::Ident::from("Restricted"),
+        &syn::Visibility::Inherited => syn::Ident::from("Inherited"),
+        _ => syn::Ident::from("Unknown"),
     }
 }
 
@@ -57,13 +48,13 @@ fn impl_rtti(ast: &syn::DeriveInput) -> quote::Tokens {
                     fn rtti() -> Type {
                         Type::Struct(Struct {
                             name: #name.to_string(),
-                            vis: #visibility,
+                            vis: Visibility::#visibility,
                             fields: {
                                 let mut fields = Vec::new();
                                 let dummy: #ident #impl_generics = unsafe { ::std::mem::uninitialized() };
                                 #(
                                     fields.push((#names.to_string(), Field {
-                                        vis: #visibilities,
+                                        vis: Visibility::#visibilities,
                                         offset: {
                                             let dummy_ref = &dummy;
                                             let field_ref = &dummy.#idents;

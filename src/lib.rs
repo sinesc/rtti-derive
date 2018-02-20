@@ -31,8 +31,11 @@ fn impl_rtti(ast: &syn::DeriveInput) -> quote::Tokens {
     let visibility = translate_visibility(&ast.vis);
     let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
 
-    if let syn::Data::Struct(ref data) = ast.data {
+    let result = if let syn::Data::Struct(ref data) = ast.data {
         if let syn::Fields::Named(ref fields) = data.fields {
+
+            // handle structs with named members
+
             let idents: Vec<_> = fields.named.iter().map(|field| field.ident.unwrap()).collect();
             let names: Vec<_> = idents.iter().map(|field| field.to_string()).collect();
             let visibilities: Vec<_> = fields.named.iter().map(|field| translate_visibility(&field.vis)).collect();
@@ -40,10 +43,9 @@ fn impl_rtti(ast: &syn::DeriveInput) -> quote::Tokens {
             let types: Vec<_> = fields.named.iter().map(|field| {
                 //TODO: field.attrs, check for ignored types. use Option<Box<Type>>
                 &field.ty
-
             }).collect();
 
-            let result = quote! {
+            quote! {
                 impl #impl_generics RTTI for #ident #ty_generics #where_clause  {
                     fn rtti() -> Type {
                         Type::Struct(Struct {
@@ -70,12 +72,52 @@ fn impl_rtti(ast: &syn::DeriveInput) -> quote::Tokens {
                     }
                 }
             }
-            ;result
-            //;panic!(result.to_string())
+
+        } else if let syn::Fields::Unnamed(ref fields) = data.fields {
+
+            // handle structs with unnamed members
+
+            let visibilities: Vec<_> = fields.unnamed.iter().map(|field| translate_visibility(&field.vis)).collect();
+            let indices: Vec<_> = (0..visibilities.len()).map(|x| syn::Index::from(x)).collect();
+
+            let types: Vec<_> = fields.unnamed.iter().map(|field| {
+                //TODO: field.attrs, check for ignored types. use Option<Box<Type>>
+                &field.ty
+            }).collect();
+
+            quote! {
+                impl #impl_generics RTTI for #ident #ty_generics #where_clause  {
+                    fn rtti() -> Type {
+                        Type::Tuple(Tuple {
+                            name: #name.to_string(),
+                            vis: Visibility::#visibility,
+                            fields: {
+                                let mut fields = Vec::new();
+                                let dummy: #ident #impl_generics = unsafe { ::std::mem::uninitialized() };
+                                #(
+                                    fields.push(Field {
+                                        vis: Visibility::#visibilities,
+                                        offset: {
+                                            let dummy_ref = &dummy;
+                                            let field_ref = &(dummy.#indices);
+                                            (field_ref as *const _ as usize) - (dummy_ref as *const _ as usize)
+                                        },
+                                        ty: Box::new(#types::rtti())
+                                    });
+                                )*
+                                std::mem::forget(dummy);
+                                fields
+                            }
+                        })
+                    }
+                }
+            }
         } else {
-            panic!("#[derive(RTTI)] is only defined for structs.");
+            panic!("#[derive(RTTI)] NYI unit struct.");
         }
     } else {
         panic!("#[derive(RTTI)] is only defined for structs.");
     }
+    ;result
+    //;panic!(result.to_string())
 }

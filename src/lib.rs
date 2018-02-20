@@ -1,4 +1,4 @@
-#![recursion_limit="128"]
+#![recursion_limit="256"]
 
 extern crate proc_macro;
 extern crate proc_macro2;
@@ -41,7 +41,8 @@ fn impl_rtti(ast: &syn::DeriveInput) -> quote::Tokens {
 
     if let syn::Data::Struct(ref data) = ast.data {
         if let syn::Fields::Named(ref fields) = data.fields {
-            let names: Vec<_> = fields.named.iter().map(|field| field.ident.unwrap().to_string()).collect();
+            let idents: Vec<_> = fields.named.iter().map(|field| field.ident.unwrap()).collect();
+            let names: Vec<_> = idents.iter().map(|field| field.to_string()).collect();
             let visibilities: Vec<_> = fields.named.iter().map(|field| translate_visibility(&field.vis)).collect();
 
             let types: Vec<_> = fields.named.iter().map(|field| {
@@ -58,13 +59,19 @@ fn impl_rtti(ast: &syn::DeriveInput) -> quote::Tokens {
                             vis: #visibility,
                             fields: {
                                 let mut fields = Vec::new();
+                                let dummy: #ident = unsafe { ::std::mem::uninitialized() };
                                 #(
-                                    fields.push(Field {
-                                        name: #names.to_string(),
+                                    fields.push((#names.to_string(), Field {
                                         vis: #visibilities,
+                                        offset: {
+                                            let dummy_ref = &dummy;
+                                            let field_ref = &dummy.#idents;
+                                            (field_ref as *const _ as usize) - (dummy_ref as *const _ as usize)
+                                        },
                                         ty: Box::new(#types::rtti())
-                                    });
+                                    }));
                                 )*
+                                std::mem::forget(dummy);
                                 fields
                             }
                         })

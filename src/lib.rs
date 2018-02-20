@@ -38,6 +38,7 @@ fn impl_rtti(ast: &syn::DeriveInput) -> quote::Tokens {
     let ident = ast.ident;
     let name = ast.ident.to_string();
     let visibility = translate_visibility(&ast.vis);
+    let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
 
     if let syn::Data::Struct(ref data) = ast.data {
         if let syn::Fields::Named(ref fields) = data.fields {
@@ -52,14 +53,14 @@ fn impl_rtti(ast: &syn::DeriveInput) -> quote::Tokens {
             }).collect();
 
             let result = quote! {
-                impl RTTI for #ident {
+                impl #impl_generics RTTI for #ident #ty_generics #where_clause  {
                     fn rtti() -> Type {
                         Type::Struct(Struct {
                             name: #name.to_string(),
                             vis: #visibility,
                             fields: {
                                 let mut fields = Vec::new();
-                                let dummy: #ident = unsafe { ::std::mem::uninitialized() };
+                                let dummy: #ident #impl_generics = unsafe { ::std::mem::uninitialized() };
                                 #(
                                     fields.push((#names.to_string(), Field {
                                         vis: #visibilities,

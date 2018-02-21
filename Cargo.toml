@@ -2,6 +2,10 @@
 name = "rtti-derive"
 version = "0.1.0"
 authors = ["Dennis Möhlmann <dmo479@gmail.com>"]
+description = "[very early WIP] Procedural macro to derive RTTI trait. See crate rtti."
+documentation = "https://docs.rs/rtti/"
+repository = "https://github.com/sinesc/rtti-derive.git"
+license = "MIT"
 
 [lib]
 proc-macro = true

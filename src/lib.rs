@@ -1,5 +1,11 @@
 #![recursion_limit="256"]
 
+/*!
+ * Procedural macro to derive RTTI trait. See crate rtti.
+ *
+ * **very early, probably best to stay away for now**
+ */
+
 extern crate proc_macro;
 extern crate proc_macro2;
 extern crate syn;
@@ -116,7 +122,7 @@ fn impl_rtti(ast: &syn::DeriveInput) -> quote::Tokens {
             panic!("#[derive(RTTI)] NYI unit struct.");
         }
     } else {
-        panic!("#[derive(RTTI)] is only defined for structs.");
+        panic!("#[derive(RTTI)] NYI non-struct..");
     }
     ;result
     //;panic!(result.to_string())

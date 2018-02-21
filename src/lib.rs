@@ -62,7 +62,7 @@ fn impl_rtti(ast: &syn::DeriveInput) -> quote::Tokens {
                                             let field_ref = &dummy.#idents;
                                             (field_ref as *const _ as usize) - (dummy_ref as *const _ as usize)
                                         },
-                                        ty: Box::new(#types::rtti())
+                                        ty: Box::new(<#types>::rtti())
                                     }));
                                 )*
                                 std::mem::forget(dummy);
@@ -102,7 +102,7 @@ fn impl_rtti(ast: &syn::DeriveInput) -> quote::Tokens {
                                             let field_ref = &(dummy.#indices);
                                             (field_ref as *const _ as usize) - (dummy_ref as *const _ as usize)
                                         },
-                                        ty: Box::new(#types::rtti())
+                                        ty: Box::new(<#types>::rtti())
                                     });
                                 )*
                                 std::mem::forget(dummy);

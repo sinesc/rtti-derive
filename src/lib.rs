@@ -56,14 +56,14 @@ fn impl_rtti(ast: &syn::DeriveInput) -> quote::Tokens {
 
             quote! {
                 Type::Struct(Struct {
-                    name: #name.to_string(),
+                    name: #name,
                     vis: Visibility::#visibility,
                     size: ::std::mem::size_of::<#ident #impl_generics>(),
                     fields: {
                         let mut fields = Vec::new();
                         let dummy: #ident #impl_generics = unsafe { ::std::mem::uninitialized() };
                         #(
-                            fields.push((#names.to_string(), Field {
+                            fields.push((#names, Field {
                                 vis: Visibility::#visibilities,
                                 offset: {
                                     let dummy_ref = &dummy;
@@ -93,7 +93,7 @@ fn impl_rtti(ast: &syn::DeriveInput) -> quote::Tokens {
 
             quote! {
                 Type::Tuple(Tuple {
-                    name: #name.to_string(),
+                    name: #name,
                     vis: Visibility::#visibility,
                     size: ::std::mem::size_of::<#ident #impl_generics>(),
                     fields: {

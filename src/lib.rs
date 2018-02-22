@@ -1,7 +1,7 @@
 #![recursion_limit="256"]
 
 /*!
- * Procedural macro to derive RTTI trait. See crate rtti.
+ * Procedural macro to derive RTTI trait. **See crate rtti for documentation.**
  *
  * **very early, probably best to stay away for now**
  */
@@ -58,7 +58,7 @@ fn impl_rtti(ast: &syn::DeriveInput) -> quote::Tokens {
                 Type::Struct(Struct {
                     name: #name.to_string(),
                     vis: Visibility::#visibility,
-                    size: ::std::mem::size_of::<#ident>(),
+                    size: ::std::mem::size_of::<#ident #impl_generics>(),
                     fields: {
                         let mut fields = Vec::new();
                         let dummy: #ident #impl_generics = unsafe { ::std::mem::uninitialized() };
@@ -95,7 +95,7 @@ fn impl_rtti(ast: &syn::DeriveInput) -> quote::Tokens {
                 Type::Tuple(Tuple {
                     name: #name.to_string(),
                     vis: Visibility::#visibility,
-                    size: ::std::mem::size_of::<#ident>(),
+                    size: ::std::mem::size_of::<#ident #impl_generics>(),
                     fields: {
                         let mut fields = Vec::new();
                         let dummy: #ident #impl_generics = unsafe { ::std::mem::uninitialized() };

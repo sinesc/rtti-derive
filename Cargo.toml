@@ -1,6 +1,6 @@
 [package]
 name = "rtti-derive"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Dennis Möhlmann <dmo479@gmail.com>"]
 description = "[very early WIP] Procedural macro to derive RTTI trait. See crate rtti."
 documentation = "https://docs.rs/rtti/"

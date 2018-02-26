@@ -1,9 +1,9 @@
 #![recursion_limit="256"]
 
 /*!
- * Procedural macro to derive RTTI trait. **See crate rtti for documentation.**
+ * Procedural macro to derive RTTI trait.
  *
- * **very early, probably best to stay away for now**
+ * See crate [`rtti`](https://crates.io/crates/rtti) for [documentation](https://docs.rs/rtti/).
  */
 
 extern crate proc_macro;

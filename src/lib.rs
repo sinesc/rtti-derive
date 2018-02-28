@@ -38,7 +38,7 @@ fn impl_rtti(ast: &syn::DeriveInput) -> quote::Tokens {
             // handle structs with named members
 
             let idents: Vec<_> = fields.named.iter().map(|field| field.ident.unwrap()).collect();
-            let names: Vec<_> = idents.iter().map(|field| field.to_string()).collect();
+            let names: Vec<_> = idents.iter().map(|ident| ident.to_string()).collect();
             let visibilities: Vec<_> = fields.named.iter().map(|field| translate_visibility(&field.vis)).collect();
 
             let types: Vec<_> = fields.named.iter().map(|field| {
@@ -138,8 +138,78 @@ fn impl_rtti(ast: &syn::DeriveInput) -> quote::Tokens {
         } else {
             panic!("#[derive(RTTI)] NYI unit struct.");
         }
+    } else if let syn::Data::Enum(ref data) = ast.data {
+
+        let variants = &data.variants;
+        let idents: Vec<_> = variants.iter().map(|variant| variant.ident).collect();
+        let names: Vec<_> = idents.iter().map(|ident| ident.to_string()).collect();
+
+        let variant_hints: Vec<_> = variants.iter().map(|variant| {
+            parse_attr_hint(&variant.attrs)
+        }).collect();
+
+        let field_types: Vec<Vec<_>> = variants.iter().map(|variant| {
+            variant.fields.iter().map(|field| {
+                if parse_attr_ignore(&field.attrs) {
+                    &dummy_type
+                } else {
+                    &field.ty
+                }
+            }).collect()
+        }).collect();
+
+        let field_hints: Vec<Vec<_>> = variants.iter().map(|variant| {
+            variant.fields.iter().map(|field| parse_attr_hint(&field.attrs)).collect()
+        }).collect();
+
+        quote! {
+            Type::Enum(Enum {
+                name: #name,
+                vis: Visibility::#visibility,
+                size: ::std::mem::size_of::<#ident #impl_generics>(),
+                variants: {
+                    let mut variants = Vec::new();
+                    //let dummy: #ident #impl_generics = unsafe { ::std::mem::uninitialized() };
+                    #(
+                        variants.push((#names, Variant {
+                            fields: {
+                                let mut fields = Vec::new();
+                                #(
+                                    fields.push(Field {
+                                        vis: Visibility::Public,
+                                        offset: 0, /*{
+                                            let dummy_ref = &dummy;
+                                            let field_ref = &dummy.#idents;
+                                            (field_ref as *const _ as usize) - (dummy_ref as *const _ as usize)
+                                        },*/
+                                        ty: <#field_types>::rtti(),
+                                        hints: {
+                                            let mut hints = Vec::new();
+                                            #(
+                                                hints.push(#field_hints);
+                                            )*
+                                            hints
+                                        }
+                                    });
+                                )*
+                                fields
+                            },
+                            hints: {
+                                let mut hints = Vec::new();
+                                #(
+                                    hints.push(#variant_hints);
+                                )*
+                                hints
+                            }
+                        }));
+                    )*
+                    //std::mem::forget(dummy);
+                    variants
+                }
+            })
+        }
     } else {
-        panic!("#[derive(RTTI)] NYI non-struct..");
+        panic!("#[derive(RTTI)] NYI union");
     };
 
     quote! {

@@ -69,7 +69,7 @@ fn impl_rtti(ast: &syn::DeriveInput) -> quote::Tokens {
                                     let field_ref = &dummy.#idents;
                                     (field_ref as *const _ as usize) - (dummy_ref as *const _ as usize)
                                 },
-                                ty: <#types>::rtti(),
+                                ty: <#types>::ctti(),
                                 hints: {
                                     let mut hints = Vec::new();
                                     #(
@@ -120,7 +120,7 @@ fn impl_rtti(ast: &syn::DeriveInput) -> quote::Tokens {
                                     let field_ref = &(dummy.#indices);
                                     (field_ref as *const _ as usize) - (dummy_ref as *const _ as usize)
                                 },
-                                ty: <#types>::rtti(),
+                                ty: <#types>::ctti(),
                                 hints: {
                                     let mut hints = Vec::new();
                                     #(
@@ -182,7 +182,7 @@ fn impl_rtti(ast: &syn::DeriveInput) -> quote::Tokens {
                                             let field_ref = &dummy.#idents;
                                             (field_ref as *const _ as usize) - (dummy_ref as *const _ as usize)
                                         },*/
-                                        ty: <#field_types>::rtti(),
+                                        ty: <#field_types>::ctti(),
                                         hints: {
                                             let mut hints = Vec::new();
                                             #(
@@ -218,7 +218,7 @@ fn impl_rtti(ast: &syn::DeriveInput) -> quote::Tokens {
             extern crate rtti;
             use rtti::*;
             impl #impl_generics RTTI for #ident #ty_generics #where_clause  {
-                fn rtti() -> Type {
+                fn ctti() -> Type {
                     #body
                 }
             }

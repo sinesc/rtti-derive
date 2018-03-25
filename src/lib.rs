@@ -79,7 +79,7 @@ fn impl_rtti(ast: &syn::DeriveInput) -> quote::Tokens {
                                 }
                             }));
                         )*
-                        std::mem::forget(dummy);
+                        ::std::mem::forget(dummy);
                         fields
                     }
                 })
@@ -130,7 +130,7 @@ fn impl_rtti(ast: &syn::DeriveInput) -> quote::Tokens {
                                 }
                             });
                         )*
-                        std::mem::forget(dummy);
+                        ::std::mem::forget(dummy);
                         fields
                     }
                 })
